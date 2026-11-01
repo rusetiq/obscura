@@ -10,7 +10,10 @@
     "test:e2e": "playwright test",
     "db:migrate": "wrangler d1 migrations apply dope-security --local",
     "db:migrate:remote": "wrangler d1 migrations apply dope-security --remote",
-    "deploy": "npm run build && wrangler deploy"
+    "deploy": "npm run build && wrangler deploy",
+    "package:landing": "node scripts/package-landing.mjs",
+    "prebuild": "node scripts/package-landing.mjs",
+    "deploy:landing": "npm run package:landing && wrangler deploy --cwd .wrangler/deployment --config showcase.toml"
   },
   "keywords": [],
   "author": "",

@@ -22,6 +22,7 @@ import {
   StackIcon,
   SunIcon,
   MoonIcon,
+  CompassIcon,
 } from '@phosphor-icons/react'
 import { severityOrder, type Finding, type Severity, type Workspace } from '../shared/types'
 import { api, download, relativeTime } from './lib/api'
@@ -34,9 +35,12 @@ import { SchedulesView } from './components/SchedulesView'
 import { TrendChart } from './components/TrendChart'
 import { ProjectsView, ScansView, SettingsView } from './components/WorkspaceViews'
 import { EmptyState, ErrorMessage, Logo, Modal, Toast } from './components/ui'
+import { LandingPage } from './components/LandingPage'
 
-type View = 'overview' | 'vulnerabilities' | 'projects' | 'scans' | 'schedules' | 'settings'
+type View =
+  'landing' | 'overview' | 'vulnerabilities' | 'projects' | 'scans' | 'schedules' | 'settings'
 const labels: Record<View, string> = {
+  landing: 'landing page',
   overview: 'overview',
   vulnerabilities: 'vulnerabilities',
   projects: 'projects',
@@ -56,9 +60,11 @@ const emptyWorkspace: Workspace = { scans: [], findings: [], schedules: [] }
 function Login({
   configurationError,
   onLogin,
+  onLanding,
 }: {
   configurationError: string
   onLogin: () => void
+  onLanding?: () => void
 }) {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
@@ -104,6 +110,14 @@ function Login({
             </button>
           </>
         )}
+        {onLanding && (
+          <div className="login-landing-bar">
+            <button type="button" onClick={onLanding}>
+              <CompassIcon size={14} />
+              <span>view landing page</span>
+            </button>
+          </div>
+        )}
       </form>
     </div>
   )
@@ -120,11 +134,15 @@ export default function App() {
     const path = window.location.pathname.slice(1)
     return Object.hasOwn(labels, path) ? (path as View) : 'overview'
   })
-  const [demo, setDemo] = useState(
-    () =>
+  const [demo, setDemo] = useState(() => {
+    const query = new URLSearchParams(location.search)
+    if (query.get('sample') === '1') return true
+    if (query.get('workspace') === 'live') return false
+    return (
       (localStorage.getItem('obscura.workspace') ?? localStorage.getItem('dope.workspace')) !==
-      'live',
-  )
+      'live'
+    )
+  })
   const [live, setLive] = useState<Workspace>(emptyWorkspace)
   const [sample, setSample] = useState<Workspace>(demoWorkspace)
   const [error, setError] = useState('')
@@ -255,6 +273,22 @@ export default function App() {
       }))
   }
 
+  if (view === 'landing')
+    return (
+      <LandingPage
+        theme={theme}
+        onToggleTheme={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+        onOpenWorkspace={() => {
+          switchWorkspace(false)
+          navigate('overview')
+        }}
+        onOpenSample={() => {
+          switchWorkspace(true)
+          navigate('overview')
+        }}
+      />
+    )
+
   if (session === 'loading')
     return (
       <div className="app-loading">
@@ -263,13 +297,14 @@ export default function App() {
         <span>opening your workspace</span>
       </div>
     )
-  if (session === 'locked')
+  if (session === 'locked' && !demo)
     return (
       <Login
         configurationError={configurationError}
         onLogin={() => {
           void loadSession()
         }}
+        onLanding={() => navigate('landing')}
       />
     )
 
@@ -328,6 +363,10 @@ export default function App() {
           ))}
         </nav>
         <div className="sidebar-bottom">
+          <button onClick={() => navigate('landing')}>
+            <CompassIcon size={18} />
+            <span>landing page</span>
+          </button>
           <a href="https://google.github.io/osv.dev/" target="_blank" rel="noreferrer">
             <BookOpenIcon size={18} />
             <span>documentation</span>
@@ -587,6 +626,13 @@ export default function App() {
               vulnerability data from osv
               <ArrowUpRightIcon size={11} />
             </a>
+            <button
+              type="button"
+              className="footer-landing-link"
+              onClick={() => navigate('landing')}
+            >
+              landing page
+            </button>
             <span>{demo ? 'sample data' : 'manifest-based dependency scans'}</span>
           </footer>
         </main>

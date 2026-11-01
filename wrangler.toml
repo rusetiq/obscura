@@ -1,5 +1,7 @@
 name = "obscura"
 main = "worker/index.ts"
+account_id = "ef9d8674583500d44ec5fd99dd074a29"
+workers_dev = true
 compatibility_date = "2026-10-30"
 compatibility_flags = ["nodejs_compat"]
 
@@ -19,7 +21,7 @@ GROQ_MODEL = "qwen/qwen3.8-27b"
 [[d1_databases]]
 binding = "DB"
 database_name = "dope-security"
-database_id = "00000000-0000-0000-0000-000000000000"
+database_id = "4d0ca9c9-dc34-418e-854c-b80508f0237b"
 migrations_dir = "migrations"
 
 [[r2_buckets]]

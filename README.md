@@ -81,3 +81,13 @@ the deployed worker uses a cloudflare cron trigger every minute. apply the sched
 `npm run dev` starts a local scheduler alongside vite and calls the same scheduled handler every minute. local recurring scans continue while the dev process is running, even with the browser closed. cloudflare deployment is required for scans to continue after shutting down your computer.
 
 existing d1 and r2 resource names are retained to preserve stored scans and manifests.
+
+## live deployment
+
+public showcase: https://obscura-showcase.aarush-uae.workers.dev
+
+application: https://obscura.aarush-uae.workers.dev
+
+the showcase is deployed as a separate static worker. the application worker serves the frontend and api together, with private r2 storage, d1 persistence, a durable scan workflow, and a one-minute scheduler trigger. sample data is public; live workspace api access requires the workspace password.
+
+run `npm run deploy` to publish the application and `npm run deploy:landing` to publish the showcase. deploys require cloudflare authentication. secrets remain in cloudflare and are excluded from the repository.

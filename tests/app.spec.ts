@@ -239,3 +239,67 @@ test('graph stays inside the plot and displays valid absolute coordinates', asyn
   await expect(page.getByRole('img', { name: /sample finding counts/ })).toBeVisible()
   await page.screenshot({ path: 'test-results/graph-fixed.png', fullPage: true })
 })
+
+test('landing showcase scrolls through square cards and supports themes and mobile', async ({
+  page,
+}) => {
+  await page.goto('/landing')
+  const showcase = page.frameLocator('iframe[title="obscura project showcase"]')
+  await expect(showcase.getByRole('heading', { name: /know what’s/ })).toBeVisible()
+  await expect(showcase.locator('.feature-card')).toHaveCount(6)
+  await expect(showcase.locator('.landing-kicker')).toHaveCount(0)
+  await expect(showcase.getByText(/comparison/i)).toHaveCount(0)
+  expect(
+    await showcase
+      .locator('.feature-card')
+      .first()
+      .evaluate((el) => getComputedStyle(el).borderRadius),
+  ).toBe('0px')
+  expect(await showcase.locator('body').evaluate((el) => el.scrollHeight)).toBeGreaterThan(3000)
+  await showcase.getByRole('link', { name: '03 fix' }).click()
+  await expect(
+    showcase.getByRole('heading', { name: 'a change you can inspect.' }),
+  ).toBeInViewport()
+  await showcase.getByRole('button', { name: 'switch to light mode' }).click()
+  await expect(showcase.getByRole('button', { name: 'switch to dark mode' })).toBeVisible()
+  await showcase.getByRole('button', { name: 'switch to dark mode' }).click()
+  await page.emulateMedia({ reducedMotion: 'reduce' })
+  expect(
+    await showcase.locator('.trace').evaluate((el) => getComputedStyle(el).animationName),
+  ).toBe('none')
+  await page.setViewportSize({ width: 390, height: 844 })
+  expect(await showcase.locator('body').evaluate((el) => el.scrollWidth <= window.innerWidth)).toBe(
+    true,
+  )
+  await showcase.getByRole('link', { name: 'explore the demo' }).first().click()
+  await expect(page.getByRole('heading', { name: 'security overview' })).toBeVisible()
+  await page.goto('/obscura.html')
+  await expect(page.getByRole('heading', { name: /know what’s/ })).toBeVisible()
+  await page.setViewportSize({ width: 1440, height: 1050 })
+  await page.screenshot({ path: 'test-results/landing-scroll-desktop.png', fullPage: true })
+  await page.setViewportSize({ width: 390, height: 844 })
+  await page.screenshot({ path: 'test-results/landing-scroll-mobile.png', fullPage: true })
+})
+
+test('landing wheel scrolling eases to rest and stops for keyboard navigation', async ({
+  page,
+}) => {
+  await page.goto('/obscura.html')
+  await page.mouse.move(700, 500)
+  await page.mouse.wheel(0, 600)
+  await expect.poll(() => page.evaluate(() => scrollY)).toBeGreaterThan(20)
+  const early = await page.evaluate(() => scrollY)
+  expect(early).toBeLessThan(650)
+  await expect.poll(() => page.evaluate(() => scrollY)).toBeGreaterThan(680)
+  await page.mouse.wheel(0, 1000)
+  await page.keyboard.press('Home')
+  await expect.poll(() => page.evaluate(() => scrollY)).toBe(0)
+  await page.emulateMedia({ reducedMotion: 'reduce' })
+  expect(
+    await page.evaluate(() => {
+      const event = new WheelEvent('wheel', { deltaY: 500, cancelable: true, bubbles: true })
+      window.dispatchEvent(event)
+      return event.defaultPrevented
+    }),
+  ).toBe(false)
+})
