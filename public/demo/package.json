@@ -1,0 +1,11 @@
+{
+  "name": "obscura-scan-demo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "intentionally outdated dependencies for testing vulnerability scans.",
+  "dependencies": {
+    "axios": "1.7.2",
+    "cross-spawn": "7.0.3",
+    "lodash": "4.17.20"
+  }
+}
