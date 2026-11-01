@@ -5,7 +5,7 @@ test('sample workspace supports navigation, triage, filtering, and report export
 }) => {
   const errors: string[] = []
   page.on('pageerror', (error) => errors.push(error.message))
-  await page.goto('/')
+  await page.goto('/app')
   await expect(page.getByRole('heading', { name: 'security overview' })).toBeVisible()
   await expect(page.locator('.topbar-sample')).toBeVisible()
   await page.screenshot({ path: 'test-results/overview-desktop.png', fullPage: true })
@@ -38,7 +38,7 @@ test('sample workspace supports navigation, triage, filtering, and report export
 
 test('live scan stores the manifest and completes a durable OSV workflow', async ({ page }) => {
   test.setTimeout(120000)
-  await page.goto('/')
+  await page.goto('/app')
   await page.getByRole('button', { name: 'new scan', exact: true }).click()
   await page.getByRole('textbox', { name: 'project name' }).fill('integration-check')
   await page.getByLabel('dependency manifest').setInputFiles({
@@ -80,7 +80,7 @@ test('live scan stores the manifest and completes a durable OSV workflow', async
 
 test('mobile layout remains usable without page overflow', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 })
-  await page.goto('/')
+  await page.goto('/app')
   await expect(page.getByRole('heading', { name: 'security overview' })).toBeVisible()
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(
     true,
@@ -96,7 +96,7 @@ test('mobile layout remains usable without page overflow', async ({ page }) => {
 })
 
 test('theme switching persists and glass surfaces work in both modes', async ({ page }) => {
-  await page.goto('/')
+  await page.goto('/app')
   await expect(page.getByRole('heading', { name: 'security overview' })).toBeVisible()
   await expect(page.getByText('latest scans only', { exact: true })).toHaveCount(0)
   await expect(page.getByText('review first', { exact: true })).toHaveCount(0)
@@ -144,7 +144,7 @@ test('schedules dispatch once per occurrence and support pause, edit, run now, a
       { timeout: 30000 },
     )
     .toBe('completed')
-  await page.goto('/')
+  await page.goto('/app')
   await page.getByLabel('workspace data source').selectOption('live')
   await page.getByRole('navigation').getByRole('button', { name: 'schedules' }).click()
   await page.getByRole('button', { name: 'add schedule' }).click()
@@ -221,7 +221,7 @@ test('schedules dispatch once per occurrence and support pause, edit, run now, a
 })
 
 test('graph stays inside the plot and displays valid absolute coordinates', async ({ page }) => {
-  await page.goto('/')
+  await page.goto('/app')
   await expect(page.getByRole('heading', { name: 'security overview' })).toBeVisible()
   const line = page.locator('.chart-line')
   const path = await line.getAttribute('d')
@@ -244,7 +244,7 @@ test('landing showcase scrolls through square cards and supports themes and mobi
   page,
 }) => {
   await page.goto('/landing')
-  const showcase = page.frameLocator('iframe[title="obscura project showcase"]')
+  const showcase = page
   await expect(showcase.getByRole('heading', { name: /know what’s/ })).toBeVisible()
   await expect(showcase.locator('.feature-card')).toHaveCount(6)
   await expect(showcase.locator('.landing-kicker')).toHaveCount(0)
@@ -284,7 +284,7 @@ test('landing showcase scrolls through square cards and supports themes and mobi
 test('landing wheel scrolling eases to rest and stops for keyboard navigation', async ({
   page,
 }) => {
-  await page.goto('/obscura.html')
+  await page.goto('/')
   await page.mouse.move(700, 500)
   await page.mouse.wheel(0, 600)
   await expect.poll(() => page.evaluate(() => scrollY)).toBeGreaterThan(20)
@@ -302,4 +302,23 @@ test('landing wheel scrolling eases to rest and stops for keyboard navigation', 
       return event.defaultPrevented
     }),
   ).toBe(false)
+})
+
+test('combined vite routes support reloads and browser history', async ({ page }) => {
+  await page.goto('/')
+  await expect(page.locator('iframe')).toHaveCount(0)
+  await expect(page.getByRole('heading', { name: /know what’s/ })).toBeVisible()
+  await page.getByRole('link', { name: 'explore the demo' }).first().click()
+  await expect(page).toHaveURL('/app')
+  await page.getByRole('navigation').getByRole('button', { name: 'vulnerabilities' }).click()
+  await expect(page).toHaveURL('/app/vulnerabilities')
+  await page.reload()
+  await expect(page.getByRole('heading', { name: 'vulnerabilities', exact: true })).toBeVisible()
+  await page.goto('/app/schedules')
+  await expect(page.getByRole('heading', { name: 'schedules', exact: true })).toBeVisible()
+  await page.getByRole('button', { name: 'landing page', exact: true }).first().click()
+  await expect(page).toHaveURL('/')
+  await page.goBack()
+  await expect(page).toHaveURL('/app/schedules')
+  await expect(page.getByRole('heading', { name: 'schedules', exact: true })).toBeVisible()
 })

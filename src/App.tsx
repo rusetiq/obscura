@@ -123,6 +123,14 @@ function Login({
   )
 }
 
+function viewFromPath(): View {
+  const path = window.location.pathname.replace(/\/+$/, '')
+  if (!path || path === '/landing') return 'landing'
+  const segment = path.startsWith('/app/') ? path.slice(5) : path.slice(1)
+  if (path === '/app' || segment === 'overview') return 'overview'
+  return Object.hasOwn(labels, segment) ? (segment as View) : 'landing'
+}
+
 export default function App() {
   const [theme, setTheme] = useState<Theme>(savedTheme)
   useEffect(() => {
@@ -130,10 +138,7 @@ export default function App() {
   }, [theme])
   const [session, setSession] = useState<'loading' | 'locked' | 'ready'>('loading')
   const [configurationError, setConfigurationError] = useState('')
-  const [view, setView] = useState<View>(() => {
-    const path = window.location.pathname.slice(1)
-    return Object.hasOwn(labels, path) ? (path as View) : 'overview'
-  })
+  const [view, setView] = useState<View>(viewFromPath)
   const [demo, setDemo] = useState(() => {
     const query = new URLSearchParams(location.search)
     if (query.get('sample') === '1') return true
@@ -219,8 +224,7 @@ export default function App() {
   }, [view])
   useEffect(() => {
     const pop = () => {
-      const path = window.location.pathname.slice(1)
-      setView(Object.hasOwn(labels, path) ? (path as View) : 'overview')
+      setView(viewFromPath())
     }
     window.addEventListener('popstate', pop)
     return () => window.removeEventListener('popstate', pop)
@@ -246,7 +250,12 @@ export default function App() {
   function navigate(next: View) {
     setView(next)
     setSidebar(false)
-    window.history.pushState(null, '', next === 'overview' ? '/' : `/${next}`)
+    window.history.pushState(
+      null,
+      '',
+      next === 'landing' ? '/' : next === 'overview' ? '/app' : `/app/${next}`,
+    )
+    window.scrollTo({ top: 0, behavior: 'instant' })
   }
   function switchWorkspace(value: boolean) {
     setDemo(value)
@@ -312,7 +321,7 @@ export default function App() {
     <div className="app-shell">
       <aside className={`sidebar ${sidebar ? 'is-open' : ''}`}>
         <a
-          href="/"
+          href="/app"
           className="brand-link"
           aria-label="obscura overview"
           onClick={(event) => {

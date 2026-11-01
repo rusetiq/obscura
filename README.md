@@ -84,10 +84,8 @@ existing d1 and r2 resource names are retained to preserve stored scans and mani
 
 ## live deployment
 
-public showcase: https://obscura-showcase.aarush-uae.workers.dev
+one vite application serves the landing page at `/` and the workspace at `/app`. workspace sections use `/app/vulnerabilities`, `/app/projects`, `/app/scans`, `/app/schedules`, and `/app/settings`. `/landing` remains an alias for the landing page.
 
-application: https://obscura.aarush-uae.workers.dev
+the same worker serves frontend assets and api endpoints, with private r2 storage, d1 persistence, durable scan workflows, and a one-minute scheduler trigger. sample data is public; live workspace api access requires the workspace password.
 
-the showcase is deployed as a separate static worker. the application worker serves the frontend and api together, with private r2 storage, d1 persistence, a durable scan workflow, and a one-minute scheduler trigger. sample data is public; live workspace api access requires the workspace password.
-
-run `npm run deploy` to publish the application and `npm run deploy:landing` to publish the showcase. deploys require cloudflare authentication. secrets remain in cloudflare and are excluded from the repository.
+run `npm run deploy` to publish the combined application. custom domains can be attached to the `obscura` worker in cloudflare. credentials and local data are excluded from the repository.

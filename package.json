@@ -12,8 +12,7 @@
     "db:migrate:remote": "wrangler d1 migrations apply dope-security --remote",
     "deploy": "npm run build && wrangler deploy",
     "package:landing": "node scripts/package-landing.mjs",
-    "prebuild": "node scripts/package-landing.mjs",
-    "deploy:landing": "npm run package:landing && wrangler deploy --cwd .wrangler/deployment --config showcase.toml"
+    "prebuild": "node scripts/package-landing.mjs"
   },
   "keywords": [],
   "author": "",
