@@ -1,3 +1,6 @@
+# FIRST PLACEEEE 😝
+
+
 # obscura
 
 obscura is an ai-assisted dependency security workspace that identifies known vulnerabilities in npm and python packages using osv. upload a dependency manifest, review affected packages and advisories, and use groq-powered analysis to understand the risk and verification steps. obscura checks proposed npm upgrades against current advisories and provides a manifest download for review.
